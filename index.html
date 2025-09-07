@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mango</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- CHANGE: Minimal game title outside the board -->
+        <div class="brand-title">Mango</div>
+        <div class="header">
+            <h1>Mango</h1>
+            <div class="scores">
+                <div class="score-box">
+                    <span class="score-title">SCORE</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="score-box">
+                    <span class="score-title">BEST</span>
+                    <span id="best-score">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="game-intro">
+            <p>Join the fruits, get to the <strong>🥭 Mango!</strong></p>
+            <button id="new-game">New Game</button>
+        </div>
+        <!-- CHANGE: Added hint arrow container outside game board -->
+        <div class="game-area">
+            <div class="game-container">
+                <div class="grid">
+                    <!-- CHANGE: Added background cells for visual grid -->
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                </div>
+                <!-- CHANGE: Updated game over overlay with proper centering -->
+                <div class="game-over" id="game-over">
+                    <div class="game-over-content">
+                        <p>Game Over!</p>
+                        <button id="restart-game">Restart Game</button>
+                    </div>
+                </div>
+            </div>
+            <!-- CHANGE: Added hint arrow container positioned outside board -->
+            <div class="hint-arrow" id="hint-arrow">
+                <div class="arrow-icon">→</div>
+                <div class="hint-text">Try this direction!</div>
+            </div>
+        </div>
+        <div class="game-explanation">
+            <p><strong>HOW TO PLAY:</strong> Use your <strong>arrow keys or WASD</strong> to move the fruits. When two fruits of the same type touch, they <strong>merge into the next fruit!</strong></p>
+            <!-- CHANGE: Added fruit legend showing progression -->
+            <div class="fruit-legend">
+                <h3>Fruit Progression:</h3>
+                <div class="legend-row">
+                    <div class="legend-item"><span class="fruit">🍎</span><span class="value">2</span></div>
+                    <div class="legend-item"><span class="fruit">🍐</span><span class="value">4</span></div>
+                    <div class="legend-item"><span class="fruit">🍓</span><span class="value">8</span></div>
+                    <div class="legend-item"><span class="fruit">🍍</span><span class="value">16</span></div>
+                    <div class="legend-item"><span class="fruit">🍇</span><span class="value">32</span></div>
+                    <div class="legend-item"><span class="fruit">🍌</span><span class="value">64</span></div>
+                    <div class="legend-item"><span class="fruit">🍑</span><span class="value">128</span></div>
+                    <div class="legend-item"><span class="fruit">🥝</span><span class="value">256</span></div>
+                    <div class="legend-item"><span class="fruit">🍒</span><span class="value">512</span></div>
+                    <div class="legend-item"><span class="fruit">🍉</span><span class="value">1024</span></div>
+                    <div class="legend-item"><span class="fruit">🥭</span><span class="value">2048</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

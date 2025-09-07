@@ -1,0 +1,392 @@
+/* CHANGE: Added CSS variables for consistent sizing and responsive design */
+:root {
+    --tile-size: 80px;
+    --tile-gap: 12px;
+    --board-size: calc(4 * var(--tile-size) + 3 * var(--tile-gap));
+    --border-radius: 6px;
+    --transition-duration: 0.15s;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family);
+}
+
+body {
+    background-color: #faf8ef;
+    color: #776e65;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    -webkit-tap-highlight-color: transparent; /* CHANGE: Better mobile tap feel */
+}
+
+/* CHANGE: Made container fully responsive and centered */
+.container {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* CHANGE: Minimal brand title top-left outside the board */
+.brand-title {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    color: #8f7a66;
+    margin-bottom: 6px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+h1 {
+    font-size: clamp(50px, 8vw, 80px);
+    font-weight: bold;
+    color: #776e65;
+    margin: 0;
+}
+
+.scores {
+    display: flex;
+    gap: 10px;
+}
+
+.score-box {
+    background: #bbada0;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-align: center;
+    min-width: 80px;
+}
+
+.score-title {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+#score, #best-score {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.game-intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.game-intro p {
+    font-size: 18px;
+    margin: 0;
+}
+
+button {
+    background: #8f7a66;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+button:hover {
+    background: #9f8b77;
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* CHANGE: Added game-area wrapper for hint arrow positioning */
+.game-area {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+/* CHANGE: Fixed game container with proper overflow and centering */
+.game-container {
+    position: relative;
+    background: #bbada0;
+    border-radius: var(--border-radius);
+    width: var(--board-size);
+    height: var(--board-size);
+    overflow: hidden; /* CHANGE: Prevent any tile overflow */
+    padding: 0; /* CHANGE: Content-box sizing per spec */
+    border: 0; /* CHANGE: No border interfering with math */
+    box-sizing: content-box; /* CHANGE: Width/height are exact board math */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* CHANGE: Updated grid with CSS variables and proper sizing */
+.grid {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, var(--tile-size));
+    grid-template-rows: repeat(4, var(--tile-size));
+    gap: var(--tile-gap);
+    padding: 0; /* CHANGE: No outer padding so board size = 4*T + 3*G */
+    user-select: none; /* CHANGE: Prevent accidental selection */
+}
+
+.cell {
+    background: rgba(238, 228, 218, 0.35);
+    border-radius: 3px;
+    width: var(--tile-size);
+    height: var(--tile-size);
+}
+
+/* CHANGE: Updated tile positioning and added fruit emoji styling */
+.tile {
+    position: absolute;
+    width: var(--tile-size);
+    height: var(--tile-size);
+    display: flex; /* CHANGE: Flex centering per request */
+    align-items: center; /* CHANGE: Vertical center */
+    justify-content: center; /* CHANGE: Horizontal center */
+    font-size: calc(var(--tile-size) * 0.8); /* CHANGE: Emoji scales with tile (0.75–0.85) */
+    line-height: var(--tile-size); /* CHANGE: Prevent clipping; match tile size */
+    white-space: nowrap; /* CHANGE: Prevent baseline shifts/wrap */
+    overflow: hidden; /* CHANGE: Ensure no overflow */
+    border-radius: 3px;
+    background: #eee4da;
+    transition: all var(--transition-duration) ease-in-out;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    user-select: none; /* CHANGE: Prevent selection while swiping */
+}
+
+/* CHANGE: Replaced number-based tiles with fruit-themed styling */
+.tile-2 { background: #ffebee; }
+.tile-4 { background: #e8f5e8; }
+.tile-8 { background: #fce4ec; }
+.tile-16 { background: #fff3e0; }
+.tile-32 { background: #f3e5f5; }
+.tile-64 { background: #fff9c4; }
+.tile-128 { background: #ffecb3; }
+.tile-256 { background: #e0f2f1; }
+.tile-512 { background: #fce4ec; }
+.tile-1024 { background: #e8f5e8; }
+.tile-2048 { background: #fff3e0; }
+
+/* CHANGE: Added merge animation for smooth tile combining */
+.tile-merge {
+    animation: merge-bounce 0.3s ease-out;
+}
+
+@keyframes merge-bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* CHANGE: Added shake animation for invalid moves */
+.board-shake {
+    animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* CHANGE: Updated game over overlay with proper centering */
+.game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(238, 228, 218, 0.95);
+    z-index: 100;
+    display: none;
+    border-radius: var(--border-radius);
+}
+
+.game-over-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.game-over p {
+    font-size: clamp(40px, 6vw, 60px);
+    font-weight: bold;
+    color: #776e65;
+    margin-bottom: 20px;
+}
+
+/* CHANGE: Added hint arrow styling positioned outside board */
+.hint-arrow {
+    position: absolute;
+    top: -10px;
+    right: -60px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    background: #8f7a66;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: hint-pulse 1.5s infinite;
+    z-index: 50;
+}
+
+.arrow-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.hint-text {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+@keyframes hint-pulse {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* CHANGE: Updated game explanation and added fruit legend */
+.game-explanation {
+    text-align: center;
+    color: #776e65;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.fruit-legend {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.fruit-legend h3 {
+    color: #776e65;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.legend-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 100%;
+}
+
+.legend-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f9f6f2;
+    border-radius: 6px;
+    padding: 8px 6px;
+    min-width: 50px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item .fruit {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.legend-item .value {
+    font-size: 12px;
+    font-weight: bold;
+    color: #776e65;
+}
+
+/* CHANGE: Added responsive design for mobile devices */
+@media (max-width: 600px) {
+    :root {
+        --tile-size: 70px;
+        --tile-gap: 10px;
+    }
+    
+    body {
+        padding: 10px;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .game-intro {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* CHANGE: Emoji font-size scales automatically via CSS var */
+    
+    .hint-arrow {
+        right: -50px;
+        font-size: 12px;
+    }
+    
+    .legend-row {
+        gap: 6px;
+    }
+    
+    .legend-item {
+        min-width: 45px;
+        padding: 6px 4px;
+    }
+    
+    .legend-item .fruit {
+        font-size: 18px;
+    }
+    
+    .legend-item .value {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 400px) {
+    :root {
+        --tile-size: 60px;
+        --tile-gap: 8px;
+    }
+    /* CHANGE: Emoji font-size scales automatically via CSS var */
+    
+    .hint-arrow {
+        right: -40px;
+        top: 0;
+    }
+}
