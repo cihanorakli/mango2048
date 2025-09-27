@@ -306,6 +306,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (noMovesAvailable()) {
       gameOver = true;
       gameOverElement.style.display = 'block';
+      // CHANGE: Persist final score to leaderboard if hook is available
+      try { window.saveMangoScore && window.saveMangoScore(score); } catch {}
     }
   }
 
