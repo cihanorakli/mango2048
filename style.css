@@ -23,7 +23,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 20px;
+    padding: 20px 20px 60px; /* Prevent overlap with fixed ticker */
     -webkit-tap-highlight-color: transparent; /* CHANGE: Better mobile tap feel */
 }
 
@@ -339,7 +339,7 @@ button:active {
     }
     
     body {
-        padding: 10px;
+        padding: 10px 10px 54px;
     }
     
     .header {
@@ -388,5 +388,30 @@ button:active {
     .hint-arrow {
         right: -40px;
         top: 0;
+    }
+}
+
+/* Fixed bottom realtime ticker for top players */
+.leaderboard-ticker {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #8f7a66;
+    color: #ffffff;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 600px) {
+    .leaderboard-ticker {
+        font-size: 13px;
+        padding: 6px 10px;
     }
 }
