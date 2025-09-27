@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- CHANGE: Minimal game title outside the board -->
         <div class="brand-title">Mango</div>
         <div class="header">
             <h1>Mango</h1>
@@ -27,17 +26,14 @@
             <p>Join the fruits, get to the <strong>🥭 Mango!</strong></p>
             <button id="new-game">New Game</button>
         </div>
-        <!-- CHANGE: Added hint arrow container outside game board -->
         <div class="game-area">
             <div class="game-container">
                 <div class="grid">
-                    <!-- CHANGE: Added background cells for visual grid -->
                     <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
                     <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
                     <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
                     <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
                 </div>
-                <!-- CHANGE: Updated game over overlay with proper centering -->
                 <div class="game-over" id="game-over">
                     <div class="game-over-content">
                         <p>Game Over!</p>
@@ -45,7 +41,6 @@
                     </div>
                 </div>
             </div>
-            <!-- CHANGE: Added hint arrow container positioned outside board -->
             <div class="hint-arrow" id="hint-arrow">
                 <div class="arrow-icon">→</div>
                 <div class="hint-text">Try this direction!</div>
@@ -53,7 +48,6 @@
         </div>
         <div class="game-explanation">
             <p><strong>HOW TO PLAY:</strong> Use your <strong>arrow keys or WASD</strong> to move the fruits. When two fruits of the same type touch, they <strong>merge into the next fruit!</strong></p>
-            <!-- CHANGE: Added fruit legend showing progression -->
             <div class="fruit-legend">
                 <h3>Fruit Progression:</h3>
                 <div class="legend-row">
@@ -71,7 +65,194 @@
                 </div>
             </div>
         </div>
+
+        <div class="leaderboard-panel">
+            <div class="leaderboard-header">
+                <h2>Leaderboard</h2>
+                <div class="user-row">
+                    <span>Oyuncu:</span>
+                    <strong id="username-display">-</strong>
+                    <button id="change-username" title="Change username">Change</button>
+                </div>
+            </div>
+            <div class="leaderboard-table-wrapper">
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Score</th>
+                            <th>Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- realtime rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+
+    <script type="module">
+        const firebaseConfig = window.MANGO_FIREBASE_CONFIG || {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            serverTimestamp,
+            collection,
+            query,
+            orderBy,
+            limit,
+            onSnapshot
+        } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const LS_KEY = 'mango_username';
+        function askUsername() {
+            let name = '';
+            while (!name) {
+                name = prompt('Oyuncu adını gir:');
+                if (name === null) break;
+                name = String(name).trim().slice(0, 24);
+                if (!name) alert('Lütfen boş olmayan bir ad gir.');
+            }
+            if (name) localStorage.setItem(LS_KEY, name);
+            return name || null;
+        }
+        function getUsername() {
+            return localStorage.getItem(LS_KEY) || null;
+        }
+        function setUsernameUI(name) {
+            const el = document.getElementById('username-display');
+            if (el) el.textContent = name || '-';
+        }
+        document.getElementById('change-username')?.addEventListener('click', () => {
+            const n = askUsername();
+            if (n) setUsernameUI(n);
+        });
+
+        let initialName = getUsername();
+        if (!initialName) {
+            initialName = askUsername();
+        }
+        setUsernameUI(initialName);
+
+        signInAnonymously(auth).catch((e) => {
+            console.error('Anonymous sign-in error', e);
+        });
+
+        let currentUid = null;
+        let lastClientWriteMs = 0; 
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return;
+            currentUid = user.uid;
+            let name = getUsername();
+            if (!name) name = askUsername();
+            setUsernameUI(name);
+
+            try {
+                if (name && user.isAnonymous) await updateProfile(user, { displayName: name });
+            } catch {}
+
+            try {
+                const ref = doc(db, 'leaderboard', currentUid);
+                const snap = await getDoc(ref);
+                const now = serverTimestamp();
+                if (!snap.exists()) {
+                    await setDoc(ref, {
+                        name: name || 'Guest',
+                        score: 0,
+                        createdAt: now,
+                        updatedAt: now
+                    });
+                }
+            } catch (e) {
+                console.error('Init leaderboard doc failed', e);
+            }
+        });
+
+        window.saveMangoScore = async function(finalScore) {
+            try {
+                if (typeof finalScore !== 'number' || !isFinite(finalScore)) return;
+                if (finalScore < 0 || finalScore > 1_000_000) return; 
+                if (!currentUid) return;
+                const nowMs = Date.now();
+                if (nowMs - lastClientWriteMs < 3000) return; 
+                lastClientWriteMs = nowMs;
+
+                const name = getUsername() || 'Guest';
+                const ref = doc(db, 'leaderboard', currentUid);
+                const snap = await getDoc(ref);
+                const prev = snap.exists() ? (snap.data().score || 0) : 0;
+                if (finalScore <= prev) return; 
+                await setDoc(ref, {
+                    name,
+                    score: Math.floor(finalScore),
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.error('saveMangoScore failed', e);
+            }
+        }
+
+        function formatTime(ts) {
+            try {
+                if (ts?.toDate) return ts.toDate().toLocaleString();
+            } catch {}
+            return '-';
+        }
+        const q = query(
+            collection(db, 'leaderboard'),
+            orderBy('score', 'desc'),
+            orderBy('updatedAt', 'desc'),
+            limit(20)
+        );
+        const tbody = document.getElementById('leaderboard-body');
+        const ticker = document.getElementById('leaderboard-ticker');
+        onSnapshot(q, (snap) => {
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            let rank = 1;
+            const items = [];
+            snap.forEach(docSnap => {
+                const d = docSnap.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${rank}</td>
+                    <td>${(d.name || 'Guest').toString().slice(0, 24)}</td>
+                    <td>${Number(d.score || 0)}</td>
+                    <td>${formatTime(d.updatedAt)}</td>
+                `;
+                tbody.appendChild(tr);
+                items.push(`${rank}) ${(d.name || 'Guest').toString().slice(0, 24)} — ${Number(d.score || 0)}`);
+                rank++;
+            });
+            if (ticker) {
+                ticker.textContent = items.length ? items.join('   |   ') : '';
+                ticker.style.display = items.length ? 'block' : 'none';
+            }
+        }, (err) => console.error('Leaderboard listen error', err));
+    </script>
+
+    <!-- Fixed bottom realtime ticker for top players -->
+    <div id="leaderboard-ticker" class="leaderboard-ticker" aria-live="polite" aria-label="Top players ticker" style="display:none"></div>
+
     <script src="game.js"></script>
 </body>
 </html>
